@@ -46,7 +46,8 @@ class Simulator:
         """
 
         def __init__(self,name,mass,radius,
-                     xPos,yPos,zPos,xVel,yVel,zVel,color):
+                     xPos,yPos,zPos,xVel,yVel,zVel,
+                     color):
             """
             A constructor for a MassObject
 
@@ -114,17 +115,17 @@ class Simulator:
         
     #End Subclass
     
-    def __init__(self,notebook=True,defaultSystem=None):
+    def __init__(self,notebook=True,importSystem=None):
         """
         A constructor for a simulator.
 
         Use this constructor to create a simulation, with the option of using a
-        jupyter notebook and an option to import a default system, pre programmed
-        in the software.
+        jupyter notebook and an option to import a pre-programmed system in the
+        software.
 
         Parameters:
             notebook (bool): Whether to output to a jupyter notebook or HTML
-            defaultSystem (str): Set this to a string of one of the pre-programmed
+            importSystem (str): Set this to a string of one of the pre-programmed
                                  simulation to skip adding masses.
         """
 
@@ -134,13 +135,13 @@ class Simulator:
         if notebook:
             output_notebook()
         
-        if defaultSystem!=None:
-            self._importDefaultSystem(defaultSystem)
+        if importSystem!=None:
+            self._importSystem(importSystem)
         else:
             self.massList=[]
     
     
-    def _importDefaultSystem(self,name):
+    def _importSystem(self,name):
         """
         A function used to import a pre-programmed system.
 
@@ -149,11 +150,98 @@ class Simulator:
         you use this function directly.)
 
         Parameters:
-            name (str): Name of the default system to import.
+            name (str): Name of the system to import.
         """
 
         pass
-    
+
+
+    def addMass(self, name='mass', mass=1, radius=1,
+                xPos=0, yPos=0, zPos=0, xVel=0, yVel=0, zVel=0,
+                color='Blue'):
+        """
+        A function to add a new mass to the simulation
+
+        This function is to add a new mass with specified parameters to the
+        system. Every parameter has a default value and does not need to be
+        changed if it isn't necessary. Masses named the same thing will be
+        given a '(1)' or '(2)' depending on the amount of similar names. For
+        example, if three masses are added all with name 'm' , one will be
+        labeled, 'm' the second, 'm(1)' and third, 'm(2)'.
+        NOTE: Masses in the same location will be discarded.
+
+        Parameters:
+            name (str): Name of the mass
+            mass (double): Mass of the object
+            radius (double): Radius of the spherical object
+            xPos (double): The current x position of the object
+            yPos (double): The current y position of the object
+            zPos (double): The current z position of the object
+            xVel (double): The current x velocity of the object
+            yVel (double): The current y velocity of the object
+            zVel (double): The current z velocity of the object
+            color (???): Color used on the plots #TODO: What is this?
+        """
+
+        # Default mass names + same mass names
+        if self.getMass(name) != None:
+            i = 1
+            newName = name + '(' + str(i) + ')'
+            while self.getMass(newName) != None:
+                i += 1
+                newName = name + '(' + str(i) + ')'
+            name = newName
+        # end names
+
+        for o1 in self.massList:
+            if o1.getCoordinates() == (xPos, yPos, zPos):
+                print('Mass: {} not added (Same position as mass {})'.format(name, o1.name))
+
+        m = self.MassObject(name, mass, radius, xPos, yPos, zPos, xVel, yVel, zVel, color)
+        self.massList.append(m)
+
+
+    def removeMass(self, nameOrIndex):
+        """
+        A function used to remove a mass.
+
+        This function easily removes masses from a system based on index or name.
+
+        Parameters:
+            nameOrIndex (str / int): The index or name of a mass to be removed.
+        """
+
+        self.massList.remove(self.getMass(nameOrIndex))
+
+
+    def getMass(self, nameOrIndex):
+        """
+        A function for retrieving MassObjects.
+
+        This function gets a MassObject from the massList that fits the index or
+        the name of the mass. If a negative value is given, or the name isn't
+        found, returns None.
+
+        Parameters:
+            nameOrIndex (str / int): The index or name of a mass you want.
+
+        Returns:
+            MassObject: The mass object you want.
+        """
+
+        if isinstance(nameOrIndex, str):
+            for m1 in self.massList:
+                if m1.name == nameOrIndex:
+                    return m1
+
+        elif isinstance(nameOrIndex, int):
+            try:
+                return self.massList[nameOrIndex]
+            except:
+                return None
+        else:
+            return None
+
     
     def _singleStep(self,dt):
         """
@@ -213,6 +301,138 @@ class Simulator:
             self._singleStep(dt)
         if save:
             self._saveState()
+
+
+    def _calcForces(self, o1, o2):
+        """
+        A function used to calculate the force between two masses.
+
+        This function takes in two masses and calculates the forces between them.
+        (Note: it is not recommended that you use this function directly.)
+
+        Parameters:
+            o1 (MassObject): The first mass used to calculate
+            o2 (MassObject): The second mass used to calculate
+        """
+
+        r = np.sqrt((o1.x - o2.x) ** 2 + (o1.y - o2.y) ** 2 + (o1.z - o2.z) ** 2)
+        forceMag = (self.G * (o1.mass) * (o2.mass)) / (r ** 2)
+
+        xhat = (o2.x - o1.x) / r
+        yhat = (o2.y - o1.y) / r
+        zhat = (o2.z - o1.z) / r
+
+        fx = forceMag * xhat
+        fy = forceMag * yhat
+        fz = forceMag * zhat
+
+        o1.xForce += fx
+        o1.yForce += fy
+        o1.zForce += fz
+
+        o2.xForce -= fx
+        o2.yForce -= fy
+        o2.zForce -= fz
+
+
+    def _calcAcceleration(self, o1):
+        """
+        A function to calculate the total acceleration on a MassObject
+
+        This function takes in a MassObject and calculates the total acceleration
+        on that object based on the net forces calculated using _calcForces().
+        (Note: it is not recommended that you use this function directly.)
+
+        Parameters:
+            o1 (MassObject): The MassObject to calculate
+        """
+
+        o1.xAccel = o1.xForce / o1.mass
+        o1.yAccel = o1.yForce / o1.mass
+        o1.zAccel = o1.zForce / o1.mass
+
+
+    def _calcMovement(self, o1, dt):
+        """
+        A function used to calculate a MassObject's movement.
+
+        This function takes in a MassObject and a dt and calculates the motion
+        based on the acceleration calculated in _calcAcceleration().
+        (Note: it is not recommended that you use this function directly.)
+
+        Parameters:
+            o1 (MassObject): The MassObject to calculate it's movement.
+            dt (double): The timestep to move it forward.
+        """
+
+        o1.x += o1.xVel * dt
+        o1.y += o1.yVel * dt
+        o1.z += o1.zVel * dt
+
+        o1.xVel += o1.xAccel * dt
+        o1.yVel += o1.yAccel * dt
+        o1.zVel += o1.zAccel * dt
+
+
+    def _checkCollision(self, o1, o2):
+        """
+        A function used to check if there is a collision.
+
+        This function is used to check if there are any collisions between
+        the two mass objects provided. If so, this function will call
+        _combineMasses().
+        (Note: it is not recommended that you use this function directly.)
+
+        Parameters:
+            o1 (MassObject): The first mass used to calculate
+            o2 (MassObject): The second mass used to calculate
+        """
+
+        distance = np.sqrt((o1.x - o2.x) ** 2 + (o1.y - o2.y) ** 2 + (o1.z - o2.z) ** 2)
+        interactionR = o1.radius + o2.radius
+
+        if (interactionR >= distance):
+            self._combineMasses(o1, o2)
+
+
+    def _combineMasses(self, o1, o2):
+        """
+        A constructor for a MassObject
+
+        This function takes two MassObjects and adds them together in an
+        inelastic collision. The resulting mass will have the name of the larger
+        mass, a radius proportional to the addition two volumes, and velocities
+        calculated based on conservation of momentum. The smaller mass is then
+        removed from the system.
+        (Note: it is not recommended that you use this function directly.)
+
+        Parameters:
+            o1 (MassObject): The first mass used to combine
+            o2 (MassObject): The second mass used to combine
+        """
+
+        # Dominate mass
+        if (o1.mass >= o2.mass):
+            dom = o1
+            sub = o2
+        else:
+            dom = o2
+            sub = o1
+
+        # combine masses
+        newM = dom.mass + sub.mass
+
+        # combine radii
+        dom.radius = (dom.radius ** 3 + sub.radius ** 3) ** (1 / 3)
+
+        # combine velocities
+        dom.xVel = (dom.mass * dom.xVel + sub.mass * sub.xVel) / newM
+        dom.yVel = (dom.mass * dom.yVel + sub.mass * sub.yVel) / newM
+        dom.zVel = (dom.mass * dom.zVel + sub.mass * sub.zVel) / newM
+
+        dom.mass = newM  # setting this value after its final use
+
+        self.massList.remove(sub)
     
     
     def _saveState(self):
@@ -225,8 +445,30 @@ class Simulator:
         """
 
         pass
+
     
-    
+    def setPlot(self,plotTitle='N-Body Sim',plotRange=(-5,5),plotSize=600):
+        """
+        A function used to set the basic parameters of the Bokeh plots.
+
+        This small function is used to customize different parameters of the
+        Bokeh plots. Due to limitations, plotRange corresponds to all axes
+        being plotted as the plots must be square. plotSize is represented in
+        pixels.
+
+        Parameters:
+            plotTitle (str): The title to be added to the plots
+            plotRange (tuple): A pair of doubles that describes the range of the
+                               plots. This will correspond to every axis range.
+            plotSize (int): The number of pixels for the width and height of
+                            the plots
+        """
+
+        self.plotTitle=plotTitle
+        self.plotRange=plotRange
+        self.plotSize=plotSize
+
+
     def plot(self,axes=('x','y'),plotRange=None):
         """
         Plot the current state of the system using the axes specified.
@@ -278,70 +520,10 @@ class Simulator:
                          y_axis_label = axes[1]+' (m)')
         self.sca= self.fig.scatter(xp,yp,radius=rad)
         show(self.fig,notebook_handle=True)
-    
-    def _updatePlot(self,axes):
-        """
-        A function used to update the Bokeh plots.
 
-        This function is used internally to update the plots as they progress
-        using the play() function. Axes is specified as a tuple for the axes
-        being plotted.
-        (Note: it is not recommended that you use this function directly.)
 
-        Parameters:
-            axes (tuple): A pair of chars (either 'x', 'y', or 'z') corresponding
-                          to the axis in which to plot
-        """
-
-        xp=[]
-        yp=[]
-        rad=[]
-        for o1 in self.massList:
-            if axes[0]=='x':
-                xp.append(o1.x)
-            elif axes[0]=='y':
-                xp.append(o1.y)
-            else:
-                xp.append(o1.z)
-                
-            if axes[1]=='x':
-                yp.append(o1.x)
-            elif axes[1]=='y':
-                yp.append(o1.y)
-            else:
-                yp.append(o1.z)
-                
-            rad.append(o1.radius)
-        
-        self.sca.data_source.data['x']=xp
-        self.sca.data_source.data['y']=yp
-        self.sca.data_source.data['radius']=rad
-        self.fig.title.text = self.plotTitle+'\t \t'+self.getTime()
-        push_notebook()
-    
-    def setPlot(self,plotTitle='N-Body Sim',plotRange=(-5,5),plotSize=600):
-        """
-        A function used to set the basic parameters of the Bokeh plots.
-
-        This small function is used to customize different parameters of the
-        Bokeh plots. Due to limitations, plotRange corresponds to all axes
-        being plotted as the plots must be square. plotSize is represented in
-        pixels.
-
-        Parameters:
-            plotTitle (str): The title to be added to the plots
-            plotRange (tuple): A pair of doubles that describes the range of the
-                               plots. This will correspond to every axis range.
-            plotSize (int): The number of pixels for the width and height of
-                            the plots
-        """
-
-        self.plotTitle=plotTitle
-        self.plotRange=plotRange
-        self.plotSize=plotSize
-        
-    
-    def play(self,dt=.1,numSteps=10,save=False,pause=0,plotFirst=True,axes=('x','y'),plotRange=None):
+    def play(self,dt=.1,numSteps=10,save=False,pause=0,
+             plotFirst=True,axes=('x','y'),plotRange=None):
         """
         A function to show the simulation evolve over time.
 
@@ -380,224 +562,49 @@ class Simulator:
             
         except KeyboardInterrupt:
             print("Halted")
-        
-    
-    def addMass(self,name='mass',mass=1,radius=1,
-                xPos=0,yPos=0,zPos=0,xVel=0,yVel=0,zVel=0,color='Blue'):
-        """
-        A function to add a new mass to the simulation
 
-        This function is to add a new mass with specified parameters to the
-        system. Every parameter has a default value and does not need to be
-        changed if it isn't necessary. Masses named the same thing will be
-        given a '(1)' or '(2)' depending on the amount of similar names. For
-        example, if three masses are added all with name 'm' , one will be
-        labeled, 'm' the second, 'm(1)' and third, 'm(2)'.
-        NOTE: Masses in the same location will be discarded.
+
+    def _updatePlot(self, axes):
+        """
+        A function used to update the Bokeh plots.
+
+        This function is used internally to update the plots as they progress
+        using the play() function. Axes is specified as a tuple for the axes
+        being plotted.
+        (Note: it is not recommended that you use this function directly.)
 
         Parameters:
-            name (str): Name of the mass
-            mass (double): Mass of the object
-            radius (double): Radius of the spherical object
-            xPos (double): The current x position of the object
-            yPos (double): The current y position of the object
-            zPos (double): The current z position of the object
-            xVel (double): The current x velocity of the object
-            yVel (double): The current y velocity of the object
-            zVel (double): The current z velocity of the object
-            color (???): Color used on the plots #TODO: What is this?
+            axes (tuple): A pair of chars (either 'x', 'y', or 'z') corresponding
+                          to the axis in which to plot
         """
 
-        #Default mass names + same mass names
-        if self.getMass(name) != None:
-            i=1
-            newName = name + '('+str(i)+')'
-            while self.getMass(newName) != None:
-                i+=1
-                newName = name + '('+str(i)+')'
-            name=newName
-        #end names
-        
+        xp = []
+        yp = []
+        rad = []
         for o1 in self.massList:
-            if o1.getCoordinates() == (xPos,yPos,zPos):
-                print('Mass: {} not added (Same position as mass {})'.format(name,o1.name))
-        
-        m = self.MassObject(name,mass,radius,xPos,yPos,zPos,xVel,yVel,zVel,color)
-        self.massList.append(m)
-        
-    def removeMass(self,nameOrIndex):
-        """
-        A function used to remove a mass.
+            if axes[0] == 'x':
+                xp.append(o1.x)
+            elif axes[0] == 'y':
+                xp.append(o1.y)
+            else:
+                xp.append(o1.z)
 
-        This function easily removes masses from a system based on index or name.
+            if axes[1] == 'x':
+                yp.append(o1.x)
+            elif axes[1] == 'y':
+                yp.append(o1.y)
+            else:
+                yp.append(o1.z)
 
-        Parameters:
-            nameOrIndex (str / int): The index or name of a mass to be removed.
-        """
+            rad.append(o1.radius)
 
-        self.massList.remove(self.getMass(nameOrIndex))
-    
-    def getMass(self,nameOrIndex):
-        """
-        A function for retrieving MassObjects.
+        self.sca.data_source.data['x'] = xp
+        self.sca.data_source.data['y'] = yp
+        self.sca.data_source.data['radius'] = rad
+        self.fig.title.text = self.plotTitle + '\t \t' + self.getTime()
+        push_notebook()
 
-        This function gets a MassObject from the massList that fits the index or
-        the name of the mass. If a negative value is given, or the name isn't
-        found, returns None.
 
-        Parameters:
-            nameOrIndex (str / int): The index or name of a mass you want.
-
-        Returns:
-            MassObject: The mass object you want.
-        """
-
-        if isinstance(nameOrIndex, str):
-            for m1 in self.massList:
-                if m1.name == nameOrIndex:
-                    return m1
-            
-        elif isinstance(nameOrIndex, int):
-            try:
-                return self.massList[nameOrIndex]
-            except:
-                return None
-        else:
-            return None
-        
-    
-    def _calcForces(self,o1,o2):
-        """
-        A function used to calculate the force between two masses.
-
-        This function takes in two masses and calculates the forces between them.
-        (Note: it is not recommended that you use this function directly.)
-
-        Parameters:
-            o1 (MassObject): The first mass used to calculate
-            o2 (MassObject): The second mass used to calculate
-        """
-
-        r = np.sqrt((o1.x-o2.x)**2+(o1.y-o2.y)**2+(o1.z-o2.z)**2)
-        forceMag =(self.G*(o1.mass)*(o2.mass))/(r**2)
-        
-        xhat=(o2.x-o1.x)/r
-        yhat=(o2.y-o1.y)/r
-        zhat=(o2.z-o1.z)/r
-                
-        fx = forceMag*xhat
-        fy = forceMag*yhat
-        fz = forceMag*zhat
-        
-        o1.xForce+=fx
-        o1.yForce+=fy
-        o1.zForce+=fz
-        
-        o2.xForce-=fx
-        o2.yForce-=fy
-        o2.zForce-=fz
-    
-    
-    def _calcAcceleration(self,o1):
-        """
-        A function to calculate the total acceleration on a MassObject
-
-        This function takes in a MassObject and calculates the total acceleration
-        on that object based on the net forces calculated using _calcForces().
-        (Note: it is not recommended that you use this function directly.)
-
-        Parameters:
-            o1 (MassObject): The MassObject to calculate
-        """
-
-        o1.xAccel=o1.xForce/o1.mass
-        o1.yAccel=o1.yForce/o1.mass
-        o1.zAccel=o1.zForce/o1.mass
-    
-    
-    def _calcMovement(self,o1,dt):
-        """
-        A function used to calculate a MassObject's movement.
-
-        This function takes in a MassObject and a dt and calculates the motion
-        based on the acceleration calculated in _calcAcceleration().
-        (Note: it is not recommended that you use this function directly.)
-
-        Parameters:
-            o1 (MassObject): The MassObject to calculate it's movement.
-            dt (double): The timestep to move it forward.
-        """
-
-        o1.x += o1.xVel*dt
-        o1.y += o1.yVel*dt
-        o1.z += o1.zVel*dt
-            
-        o1.xVel += o1.xAccel*dt
-        o1.yVel += o1.yAccel*dt
-        o1.zVel += o1.zAccel*dt
-    
-    
-    def _checkCollision(self,o1,o2):
-        """
-        A function used to check if there is a collision.
-
-        This function is used to check if there are any collisions between
-        the two mass objects provided. If so, this function will call
-        _combineMasses().
-        (Note: it is not recommended that you use this function directly.)
-
-        Parameters:
-            o1 (MassObject): The first mass used to calculate
-            o2 (MassObject): The second mass used to calculate
-        """
-
-        distance = np.sqrt((o1.x-o2.x)**2+(o1.y-o2.y)**2+(o1.z-o2.z)**2)
-        interactionR = o1.radius + o2.radius
-                    
-        if(interactionR>=distance):
-            self._combineMasses(o1,o2)
-    
-    
-    def _combineMasses(self,o1,o2):
-        """
-        A constructor for a MassObject
-
-        This function takes two MassObjects and adds them together in an
-        inelastic collision. The resulting mass will have the name of the larger
-        mass, a radius proportional to the addition two volumes, and velocities
-        calculated based on conservation of momentum. The smaller mass is then
-        removed from the system.
-        (Note: it is not recommended that you use this function directly.)
-
-        Parameters:
-            o1 (MassObject): The first mass used to combine
-            o2 (MassObject): The second mass used to combine
-        """
-
-        #Dominate mass
-        if(o1.mass>=o2.mass):
-            dom=o1
-            sub=o2
-        else:
-            dom=o2
-            sub=o1
-            
-        #combine masses
-        newM=dom.mass+sub.mass
-        
-        #combine radii
-        dom.radius=(dom.radius**3 + sub.radius**3 )**(1/3)
-        
-        #combine velocities
-        dom.xVel= (dom.mass*dom.xVel+sub.mass*sub.xVel)/newM
-        dom.yVel= (dom.mass*dom.yVel+sub.mass*sub.yVel)/newM
-        dom.zVel= (dom.mass*dom.zVel+sub.mass*sub.zVel)/newM
-        
-        dom.mass=newM #setting this value after its final use
-        
-        
-        self.massList.remove(sub)
-        
     def getTime(self):
         """
         A function that returns the current simulation time.
@@ -614,4 +621,3 @@ class Simulator:
         h, rem = divmod(rem, 3600)
         m, s = divmod(rem, 60)
         return '+ {}y, {}d, {}:{}:{}'.format(int(y),int(d),int(h),int(m),s)
-    
