@@ -2,6 +2,8 @@
 
 import numpy as np
 import time
+import csv
+import os
 
 #from ipywidgets import interact
 from bokeh.io import push_notebook, show, output_notebook
@@ -14,6 +16,7 @@ class Simulator:
     Create an instance of this class to use the N-Body Simulator.
 
     Attributes:
+        name (str): The name of the Simulation
         massList (list): a list of MassObjects used in the simulation
         G (double): Newton's gravitational constant
         fig (figure): the object used in Bokeh's plotting functions
@@ -112,23 +115,71 @@ class Simulator:
                 Tuple: Returned in the form of: (x-velocity,y-velocity,z-velocity)
             """
             return (self.xVel,self.yVel,self.zVel)
-        
+
+        def _saveMassState(self,folder,time):
+            """
+            A function to save attributes of the MassObject to a .csv file
+
+            This function will either make a new file with the name of the
+            MassObject as the filename or append to the file with it's current
+            status.
+
+            Parameters:
+                folder (str): The folder to save the file
+                time (double): number of seconds since the start of the sim
+            """
+            direc = folder + '/' + self.name + '.csv'
+            if os.path.exists(direc) and time > 0:
+                with open(direc,'a') as f:
+                    writ = csv.writer(f)
+                    writ.writerow([time,self.mass, self.radius,
+                                   self.x, self.y, self.z,
+                                   self.xVel, self.yVel, self.zVel,
+                                   self.xAccel, self.yAccel, self.zAccel,
+                                   self.xForce, self.yForce, self.zForce,
+                                   self.color])
+
+            else:
+                with open(direc,'w') as f:
+                    writ = csv.writer(f)
+                    writ.writerow(['time','mass','radius','x','y','z',
+                                   'x-velocity','y-velocity','z-velocity',
+                                   'x-acceleration','y-acceleration','z-acceleration',
+                                   'x-force','y-force','z-force',
+                                   'color'])
+
+                    writ.writerow([time,self.mass,self.radius,
+                                   self.x,self.y,self.z,
+                                   self.xVel,self.yVel,self.zVel,
+                                   self.xAccel,self.yAccel,self.zAccel,
+                                   self.xForce,self.yForce,self.zForce,
+                                   self.color])
+
+
+
+
     #End Subclass
     
-    def __init__(self,notebook=True,importSystem=None):
+    def __init__(self,name='simulation',path='',notebook=True,importSystem=None):
         """
         A constructor for a simulator.
 
-        Use this constructor to create a simulation, with the option of using a
-        jupyter notebook and an option to import a pre-programmed system in the
-        software.
+        Use this constructor to create a simulation with a given name, with
+        the option of using a jupyter notebook and an option to import a
+        pre-programmed system in the software.
 
         Parameters:
+            name (str): Name of the simulation
+            path (str): A path to put the output in, if desired
             notebook (bool): Whether to output to a jupyter notebook or HTML
             importSystem (str): Set this to a string of one of the pre-programmed
                                  simulation to skip adding masses.
         """
-
+        self.name = name
+        if path != '':
+            self.path = path
+        else:
+            self.path = os.getcwd()
         self.time=0
         self.G = 6.67259 * (10**-11)
         self.setPlot()
@@ -296,6 +347,8 @@ class Simulator:
             numSteps (int): The number of times to step forward by dt
             save (bool): Whether to save to a file after completing the function
         """
+        if save and self.time == 0:
+            self._saveState()
 
         for i in range(0,numSteps):
             self._singleStep(dt)
@@ -443,10 +496,14 @@ class Simulator:
         file.
         (Note: it is not recommended that you use this function directly.)
         """
+        direc = self.path+'/'+self.name
+        if not os.path.exists(direc):
+            os.mkdir(direc)
 
-        pass
+        for o1 in self.massList:
+            o1._saveMassState(direc,self.time)
 
-    
+
     def setPlot(self,plotTitle='N-Body Sim',plotRange=(-5,5),plotSize=600):
         """
         A function used to set the basic parameters of the Bokeh plots.
