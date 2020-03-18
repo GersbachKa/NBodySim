@@ -36,6 +36,9 @@ class Analyzer:
             self.notebook = False
         
         self.path=currentPath
+        
+        self.colorOptions = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(255,255,255)]
+        
         self.updateData()
     
     def updateData(self):
@@ -116,9 +119,12 @@ class Analyzer:
         fig = figure(plot_height=height,plot_width=width,x_range=xrange,y_range=yrange)
         
         for i in range(0,len(yvals)):
-            fig.line(time[i],yvals[i])
+            linecolor = self.colorOptions[i%7]
+            
+            fig.line(time[i],yvals[i],legend_label=massName[i]+': '+attribute[i],
+                     line_color=linecolor)
             
         show(fig,notebook_handle=self.notebook)
-            
+        return fig    
                 
     
