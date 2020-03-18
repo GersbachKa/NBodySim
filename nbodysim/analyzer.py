@@ -116,7 +116,9 @@ class Analyzer:
         xrange=(min([min(i) for i in time]),max([max(i) for i in time]))
         yrange=(min([min(i) for i in yvals]),max([max(i) for i in yvals]))
        
-        fig = figure(plot_height=height,plot_width=width,x_range=xrange,y_range=yrange)
+        TOOLS="hover,crosshair,pan,box_zoom,wheel_zoom,zoom_in,zoom_out,reset,save"
+    
+        fig = figure(plot_height=height,plot_width=width,x_range=xrange,y_range=yrange,tools=TOOLS)
         
         for i in range(0,len(yvals)):
             linecolor = self.colorOptions[i%7]
