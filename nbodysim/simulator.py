@@ -129,7 +129,7 @@ class Simulator:
             """
             direc = folder + '/' + self.name + '.csv'
             if os.path.exists(direc) and time > 0:
-                with open(direc,'a') as f:
+                with open(direc,'a',newline='') as f:
                     writ = csv.writer(f)
                     writ.writerow([time,self.mass, self.radius,
                                    self.x, self.y, self.z,
@@ -138,7 +138,7 @@ class Simulator:
                                    self.xForce, self.yForce, self.zForce])
 
             else:
-                with open(direc,'w') as f:
+                with open(direc,'w',newline='') as f:
                     writ = csv.writer(f)
                     writ.writerow(['time','mass','radius','x','y','z',
                                    'x-velocity','y-velocity','z-velocity',
