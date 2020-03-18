@@ -31,7 +31,7 @@ class Simulator:
             name (str): Name of the mass
             mass (double): Mass of the object
             radius (double): Radius of the spherical object
-            color (???): Color used on the plots #TODO: What is this?
+            color (3 tuple): The RGB values for the Color of the object
             x (double): The current x position of the object
             y (double): The current y position of the object
             z (double): The current z position of the object
@@ -60,7 +60,7 @@ class Simulator:
                 name (str): Name of the mass
                 mass (double): Mass of the object
                 radius (double): Radius of the spherical object
-                color (???): Color used on the plots #TODO: What is this?
+                color (3 tuple): The RGB values for the Color of the object
                 xPos (double): The current x position of the object
                 yPos (double): The current y position of the object
                 zPos (double): The current z position of the object
@@ -71,7 +71,7 @@ class Simulator:
             self.name=name
             self.mass=mass
             self.radius=radius
-            self.color=color
+            self.color= "#%02x%02x%02x" % color
             
             self.x=xPos
             self.y=yPos
@@ -209,7 +209,7 @@ class Simulator:
 
     def addMass(self, name='mass', mass=1, radius=1,
                 xPos=0, yPos=0, zPos=0, xVel=0, yVel=0, zVel=0,
-                color='Blue'):
+                color=(0,0,255)):
         """
         A function to add a new mass to the simulation
 
@@ -231,7 +231,7 @@ class Simulator:
             xVel (double): The current x velocity of the object
             yVel (double): The current y velocity of the object
             zVel (double): The current z velocity of the object
-            color (???): Color used on the plots #TODO: What is this?
+            color (3 tuple): The RGB values for the Color of the object
         """
 
         # Default mass names + same mass names
@@ -567,6 +567,8 @@ class Simulator:
             rad.append(o1.radius)
             colors.append(o1.color)
         
+        TOOLS="hover,crosshair,pan,wheel_zoom,zoom_in,zoom_out,reset,save"
+        
         timedTitle = self.plotTitle+'\t \t'+self.getTime()
         
         self.fig= figure(title=timedTitle,plot_height=self.plotSize,
@@ -574,8 +576,10 @@ class Simulator:
                          x_range=self.plotRange,
                          y_range=self.plotRange,
                          x_axis_label = axes[0]+' (m)',
-                         y_axis_label = axes[1]+' (m)')
-        self.sca= self.fig.scatter(xp,yp,radius=rad)
+                         y_axis_label = axes[1]+' (m)',
+                         tools=TOOLS)
+
+        self.sca= self.fig.scatter(xp,yp,radius=rad,fill_color=colors,alpha=1,line_color=None)
         show(self.fig,notebook_handle=self.notebook)
 
 
