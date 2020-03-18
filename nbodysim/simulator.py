@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import time
 import csv
@@ -122,7 +120,8 @@ class Simulator:
 
             This function will either make a new file with the name of the
             MassObject as the filename or append to the file with it's current
-            status.
+            status.(Note: it is not recommended that you use this function 
+            directly.)
 
             Parameters:
                 folder (str): The folder to save the file
@@ -136,8 +135,7 @@ class Simulator:
                                    self.x, self.y, self.z,
                                    self.xVel, self.yVel, self.zVel,
                                    self.xAccel, self.yAccel, self.zAccel,
-                                   self.xForce, self.yForce, self.zForce,
-                                   self.color])
+                                   self.xForce, self.yForce, self.zForce])
 
             else:
                 with open(direc,'w') as f:
@@ -145,16 +143,13 @@ class Simulator:
                     writ.writerow(['time','mass','radius','x','y','z',
                                    'x-velocity','y-velocity','z-velocity',
                                    'x-acceleration','y-acceleration','z-acceleration',
-                                   'x-force','y-force','z-force',
-                                   'color'])
+                                   'x-force','y-force','z-force'])
 
                     writ.writerow([time,self.mass,self.radius,
                                    self.x,self.y,self.z,
                                    self.xVel,self.yVel,self.zVel,
                                    self.xAccel,self.yAccel,self.zAccel,
-                                   self.xForce,self.yForce,self.zForce,
-                                   self.color])
-
+                                   self.xForce,self.yForce,self.zForce])
 
 
 
@@ -177,6 +172,8 @@ class Simulator:
         """
         self.name = name
         if path != '':
+            if path[-1] =='/':
+                path=path[0:-1]
             self.path = path
         else:
             self.path = os.getcwd()
@@ -185,6 +182,9 @@ class Simulator:
         self.setPlot()
         if notebook:
             output_notebook()
+            self.notebook = True
+        else:
+            self.notebook = False
         
         if importSystem!=None:
             self._importSystem(importSystem)
@@ -576,7 +576,7 @@ class Simulator:
                          x_axis_label = axes[0]+' (m)',
                          y_axis_label = axes[1]+' (m)')
         self.sca= self.fig.scatter(xp,yp,radius=rad)
-        show(self.fig,notebook_handle=True)
+        show(self.fig,notebook_handle=self.notebook)
 
 
     def play(self,dt=.1,numSteps=10,save=False,pause=0,
@@ -678,3 +678,6 @@ class Simulator:
         h, rem = divmod(rem, 3600)
         m, s = divmod(rem, 60)
         return '+ {}y, {}d, {}:{}:{}'.format(int(y),int(d),int(h),int(m),s)
+    
+        
+    
