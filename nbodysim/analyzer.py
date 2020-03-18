@@ -107,7 +107,7 @@ class Analyzer:
                 yvals.append(self.massData[n][:,14])
                 
             else:
-                print("attribute \"{}\" not recognized for mass \"{}\".".format(n,m))
+                print("attribute \"{}\" not recognized for mass \"{}\".".format(a,n))
                 return
             
         xrange=(min([min(i) for i in time]),max([max(i) for i in time]))
