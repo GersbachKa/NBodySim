@@ -126,7 +126,7 @@ class Analyzer:
             fig.line(time[i],yvals[i],legend_label=massName[i]+': '+attribute[i],
                      line_color=linecolor)
             
-        show(fig,notebook_handle=self.notebook)
+        show(fig)
         return fig    
                 
     
