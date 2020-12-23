@@ -580,7 +580,7 @@ class Simulator:
                          tools=TOOLS)
 
         self.sca= self.fig.scatter(xp,yp,radius=rad,fill_color=colors,alpha=1,line_color=None)
-        show(self.fig)
+        show(self.fig,notebook_handle=True)
 
 
     def play(self,dt=.1,numSteps=10,save=False,pause=0,
