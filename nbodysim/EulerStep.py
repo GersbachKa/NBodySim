@@ -35,10 +35,12 @@ def eulerStepFunction(simulator, dt):
             r = checkCollision(simulator.allObjects[i],simulator.allObjects[j])
             if r==1:
                 #Don't duplicate deletes
+                print(simulator.allObjects[i].mass , simulator.allObjects[j].mass)
                 if not (i in toRemove):
                     toRemove.append(i)
             elif r==2:
                 #Don't duplicate deletes
+                print(simulator.allObjects[i].mass , simulator.allObjects[j].mass)
                 if not (j in toRemove):
                     toRemove.append(j)
     
@@ -68,10 +70,10 @@ def calcAcceleration(G,m1,m2):
         raise ZeroDivisionError("Objects occupy the same space!")
     
     #...and the unit vector difference
-    positionHat = difference/np.sqrt(magnitudeSquare) #TODO: Deal with division by 0
+    positionHat = difference/np.sqrt(magnitudeSquare)
     
     #Calculate the massless force vector (acceleration/mass)
-    fVector = (G/magnitudeSquare)*positionHat #TODO: Deal with division by 0
+    fVector = (G/magnitudeSquare)*positionHat
     
     #Now multiply fVector by mass to get acceleration. Use Newton's 3rd law to equate the two
     m1.acceleration+=m2.mass*fVector

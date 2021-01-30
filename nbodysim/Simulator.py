@@ -15,6 +15,7 @@ from bokeh.plotting import figure
 class Simulator:
     """
     The main class for the project.
+    
     Create an instance of this class to use the N-Body Simulator.
     
     Attributes:
@@ -46,7 +47,6 @@ class Simulator:
             importSystem (str): Set this to a string of one of the pre-programmed
                                  simulation to skip adding masses.
             load (bool): Whether to load an existing simulation.
-        
         """
         if importSystem!=None:
             self._importSystem(importSystem)
