@@ -30,7 +30,7 @@ def periapsisFinder(orbitMass, semiMajorAxis, eccentricity, inclination):
     velVector = np.array([0,-periSpeed,0])
     
     #Position---------------
-    deg2Rad = 180/np.pi
+    deg2Rad = np.pi/180
     posVector = np.array([-(semiMajorAxis*(1-eccentricity)*np.cos(inclination*deg2Rad)),0,
                           -(semiMajorAxis*(1-eccentricity)*np.sin(inclination*deg2Rad))])
     
