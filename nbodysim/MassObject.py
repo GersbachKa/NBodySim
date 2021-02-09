@@ -3,6 +3,8 @@ import os
 import csv
 import copy
 
+TRAIL_LENGTH = 30
+
 class MassObject:
     """
     A class which describes all attributes of the objects within the system.
@@ -13,9 +15,10 @@ class MassObject:
         name (str): Name of the mass
         mass (double): Mass of the object
         radius (double): Radius of the spherical object
-        position (Numpy Array): A 3D vector representing the position in meters
-        velocity (Numpy Array): A 3D vector representing the velocity in meters/s
-        acceleration (Numpy Array): A 3D vector representing the acceleration in m/(s^2)
+        position (Numpy Array): A 2D array representing the position vectors in meters 
+                                along with the last 30 saved positions
+        velocity (Numpy Array): A vector representing the velocity in meters/s
+        acceleration (Numpy Array): A vector representing the acceleration in m/(s^2)
         color (str): A binary representation of the color in RGB
     """
     
@@ -30,15 +33,15 @@ class MassObject:
             name (str): Name of the mass
             mass (double): Mass of the object
             radius (double): Radius of the spherical object
-            position (Numpy Array): A 3D vector representing the position in meters
-            velocity (Numpy Array): A 3D vector representing the velocity in meters/s
-            acceleration (Numpy Array): A 3D vector representing the acceleration in m/(s^2)
+            position (Numpy Array): A vector representing the position in meters
+            velocity (Numpy Array): A vector representing the velocity in meters/s
+            acceleration (Numpy Array): A vector representing the acceleration in m/(s^2)
             color (str): A binary representation of the color in RGB
         """
         self.name=name
         self.mass=mass
         self.radius=radius
-        self.position = np.array([position]*30,dtype=np.float32)
+        self.position = np.array([position]*TRAIL_LENGTH,dtype=np.float32)
         self.velocity = np.array(velocity,dtype=np.float32)
         self.color = "#%02x%02x%02x" % color
         self.acceleration = np.zeros(3,dtype=np.float32)
@@ -96,6 +99,7 @@ class MassObject:
                       ]
             writer.writerow(toWrite)
         
+        #Shift positions down the line.
         self.position = np.roll(self.position,1,axis=0)
         self.position[0] = self.position[1]
         

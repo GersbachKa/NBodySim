@@ -327,7 +327,7 @@ class Simulator:
             self.time+=dt
         
         
-    def plot(self,axes=('x','y'),plotRange=None,plotSize=(400,400)):
+    def plot(self,axes=('x','y'),plotRange=None,plotSize=(400,400),trails=True):
         """
         Plot the current state of the system using the axes specified.
         
@@ -343,6 +343,7 @@ class Simulator:
                                plots. This will correspond to every axis range.
             plotSize (2 tuple): A pair of integers that represents the size in pixels
                                 of the created plot.
+            trails (boolean): Whether to show object trails
         
         """
         #Check for same axes
@@ -352,6 +353,9 @@ class Simulator:
         x = []
         y = []
         z = []
+        xt = []
+        yt = []
+        zt = []
         rad = []
         colors = []
         labels = []
@@ -361,6 +365,9 @@ class Simulator:
             x.append(o.position[0,0])
             y.append(o.position[0,1])
             z.append(o.position[0,2])
+            xt.append(o.position[:,0])
+            yt.append(o.position[:,1])
+            zt.append(o.position[:,2])
             rad.append(o.radius)
             colors.append(o.color)
             labels.append(o.name)
@@ -385,17 +392,20 @@ class Simulator:
                           x_axis_label = axes[0]+" (m)", y_axis_label = axes[1]+" (m)",
                           x_range=plotRange[0], y_range=plotRange[1], tools=TOOLS)
         
-        self.plotSource = ColumnDataSource(dict(x=x,y=y,z=z,radius=rad,color=colors,label=labels))
+        self.plotSource = ColumnDataSource(dict(x=x,y=y,z=z,xt=xt,yt=yt,zt=zt,radius=rad,color=colors,label=labels))
         
         self.fig.scatter(x=axes[0],y=axes[1],radius='radius',fill_color='color',line_color=None,
                                   source=self.plotSource)
+        
+        if trails:
+            self.fig.multi_line(xs=axes[0]+'t',ys=axes[1]+'t',color='color',source=self.plotSource)
             
         self.fig.hover.tooltips=[("Name","@label"),("Location","@x, @y, @z")]
         show(self.fig,notebook_handle=self.notebookOutput)
     
     
     def play(self,dt=1,numberOfSteps=100,save=False,pause=0,plotFirst=True,axes=('x','y'),
-             plotRange=None,plotSize=(400,400)):
+             plotRange=None,plotSize=(400,400),trails=True):
         """
         A method to show the simulation evolve over time.
         
@@ -422,10 +432,11 @@ class Simulator:
                                plots. This will correspond to every axis range.
             plotSize (2 tuple): A pair of integers that represents the size in pixels
                                 of the created plot.
+            trails (boolean): Whether to show object trails
         """
         
         if plotFirst:
-            self.plot(axes,plotRange,plotSize)
+            self.plot(axes,plotRange,plotSize,trails)
         
         keepPlay=True
         try:
@@ -466,6 +477,9 @@ class Simulator:
         x = []
         y = []
         z = []
+        xt = []
+        yt = []
+        zt = []
         rad = []
         colors = []
         labels = []
@@ -475,11 +489,14 @@ class Simulator:
             x.append(o.position[0,0])
             y.append(o.position[0,1])
             z.append(o.position[0,2])
+            xt.append(o.position[:,0])
+            yt.append(o.position[:,1])
+            zt.append(o.position[:,2])
             rad.append(o.radius)
             colors.append(o.color)
             labels.append(o.name)
         
-        self.plotSource.data = dict(x=x,y=y,z=z,radius=rad,color=colors,label=labels)
+        self.plotSource.data = dict(x=x,y=y,z=z,xt=xt,yt=yt,zt=zt,radius=rad,color=colors,label=labels)
         
         self.fig.title.text = self.name+'\t \t'+self.getTime()
         
