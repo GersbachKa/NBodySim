@@ -7,7 +7,6 @@ import threading
 
 from nbodysim.MassObject import MassObject
 from nbodysim.EulerStep import eulerStepFunction
-from nbodysim.FastEuler import fastEuler
 
 from bokeh.models import ColumnDataSource
 from bokeh.io import push_notebook, show, output_notebook
@@ -296,9 +295,6 @@ class Simulator:
         """
         if stepType=="Euler":
             self.stepFunction = eulerStepFunction
-    
-        if stepType=="FastEuler":
-            self.stepFunction = fastEuler
             
     
     def step(self,dt=1,numberOfSteps=60,save=False):

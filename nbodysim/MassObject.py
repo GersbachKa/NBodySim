@@ -97,6 +97,7 @@ class MassObject:
             writer.writerow(toWrite)
         
         self.position = np.roll(self.position,1,axis=0)
+        self.position[0] = self.position[1]
         
     
     def resetAcceleration(self):
