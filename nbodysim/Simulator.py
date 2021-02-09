@@ -7,6 +7,7 @@ import threading
 
 from nbodysim.MassObject import MassObject
 from nbodysim.EulerStep import eulerStepFunction
+from nbodysim.FastEuler import fastEuler
 
 from bokeh.models import ColumnDataSource
 from bokeh.io import push_notebook, show, output_notebook
@@ -197,7 +198,7 @@ class Simulator:
         for i in range(self.objectCount):
             o = self.allObjects[i]
             for i in range(3):
-                if o.position[i] != position[i]:
+                if o.position[0,i] != position[i]:
                     break
                 if i==2:
                     print("Object: {} already occupies the position. Cannot add {} object!".format(o.name,name))
@@ -296,6 +297,9 @@ class Simulator:
         if stepType=="Euler":
             self.stepFunction = eulerStepFunction
     
+        if stepType=="FastEuler":
+            self.stepFunction = fastEuler
+            
     
     def step(self,dt=1,numberOfSteps=60,save=False):
         """
@@ -358,9 +362,9 @@ class Simulator:
         
         for i in range(self.objectCount):
             o = self.allObjects[i]
-            x.append(o.position[0])
-            y.append(o.position[1])
-            z.append(o.position[2])
+            x.append(o.position[0,0])
+            y.append(o.position[0,1])
+            z.append(o.position[0,2])
             rad.append(o.radius)
             colors.append(o.color)
             labels.append(o.name)
@@ -472,9 +476,9 @@ class Simulator:
         
         for i in range(self.objectCount):
             o = self.allObjects[i]
-            x.append(o.position[0])
-            y.append(o.position[1])
-            z.append(o.position[2])
+            x.append(o.position[0,0])
+            y.append(o.position[0,1])
+            z.append(o.position[0,2])
             rad.append(o.radius)
             colors.append(o.color)
             labels.append(o.name)

@@ -61,7 +61,7 @@ def calcAcceleration(G,m1,m2):
         m2 (MassObject): The second mass used to calculate
     """
     #Find the vector difference...
-    difference = m2.position - m1.position #m1 is origin
+    difference = m2.position[0] - m1.position[0] #m1 is origin
     
     #...magnitude of that difference squared...
     magnitudeSquare = difference.dot(difference) #Faster than np.sum(np.square(difference))
@@ -91,7 +91,7 @@ def calculateMovement(m1,dt):
         m1 (MassObject): The MassObject to calculate it's movement.
         dt (double): The timestep to move it forward.
     """
-    m1.position+=m1.velocity*dt
+    m1.position[0]+=m1.velocity*dt
     m1.velocity+=m1.acceleration*dt
 
 def checkCollision(m1,m2):
@@ -112,13 +112,13 @@ def checkCollision(m1,m2):
         return 0
     
     #Find the vector difference
-    difference = m2.position - m1.position
+    difference = m2.position[0] - m1.position[0]
     
     #To get the magnitude of that difference
-    magnitude = np.sqrt(difference.dot(difference)) #Faster than np.sum(np.square(difference))
+    magnitude = (difference.dot(difference))
     
     retVal = 0
-    if (m1.radius+m2.radius>=magnitude) and m1.mass>0 and m2.mass>0:
+    if m1.mass>0 and m2.mass>0 and ((m1.radius+m2.radius)**2>=magnitude):
         #Collision occured!
         
         #Determine larger mass
@@ -142,7 +142,7 @@ def checkCollision(m1,m2):
         dom.mass += sub.mass
         
         #Remove sub
-        sub = None
+        sub.mass = 0
         
     #return so the sim knows to delete masses, if needed (0 is no delete, 1 is m1, 2 is m2)
     return retVal

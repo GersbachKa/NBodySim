@@ -38,7 +38,7 @@ class MassObject:
         self.name=name
         self.mass=mass
         self.radius=radius
-        self.position = np.array(position,dtype=np.float32)
+        self.position = np.array([position]*30,dtype=np.float32)
         self.velocity = np.array(velocity,dtype=np.float32)
         self.color = "#%02x%02x%02x" % color
         self.acceleration = np.zeros(3,dtype=np.float32)
@@ -54,10 +54,11 @@ class MassObject:
         """
         self.name = other.name
         self.mass = other.mass
-        self.position = other.position
-        self.velocity = other.velocity
+        self.position = copy.deepcopy(other.position)
+        self.velocity = copy.deepcopy(other.velocity)
+        self.acceleration = copy.deepcopy(other.acceleration)
         self.color = other.color
-        self.acceleration = other.acceleration
+        
         
     def _saveState(self,folder,time):
         """
@@ -88,13 +89,15 @@ class MassObject:
         with open(fileDirectory,'a',newline='') as f:
             writer = csv.writer(f)
             toWrite = [time, self.mass, self.radius,
-                       self.position[0], self.position[1], self.position[2],
+                       self.position[0,0], self.position[0,1], self.position[0,2],
                        self.velocity[0], self.velocity[1], self.velocity[2],
                        self.acceleration[0], self.acceleration[1], self.acceleration[2],
                        self.color
                       ]
             writer.writerow(toWrite)
-            
+        
+        self.position = np.roll(self.position,1,axis=0)
+        
     
     def resetAcceleration(self):
         """
@@ -117,5 +120,5 @@ class MassObject:
         the name, position vector, and velocity vector in the string.
         
         """
-        return "{0}: (Position:{1}, Velocity:{2})".format(self.name,self.position,self.velocity)
+        return "{0}: (Position:{1}, Velocity:{2})".format(self.name,self.position[0],self.velocity)
          
