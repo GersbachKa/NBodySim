@@ -1,5 +1,7 @@
 import numpy as np
 
+#Wow~!
+
 #This file is intended to contain a variety of different utility functions that can be useful
 G = 6.6743e-11
 
