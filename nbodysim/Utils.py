@@ -37,3 +37,25 @@ def periapsisFinder(orbitMass, semiMajorAxis, eccentricity, inclination):
                           -(semiMajorAxis*(1-eccentricity)*np.sin(inclination*deg2Rad))])
     
     return posVector, velVector
+
+
+def rotate3DVector(vector3, rotationAxis, angle, degrees=False):
+    if degrees:
+        theta = angle*np.pi/180
+    else:
+        theta = angle
+    
+    if rotationAxis == 'x' or rotationAxis == 'X':
+        rotate = np.array([[1,0,0],[0,np.cos(theta),-np.sin(theta)],[0,np.sin(theta),np.cos(theta)]])
+    
+    elif rotationAxis == 'y' or rotationAxis == 'Y':
+        rotate = np.array([[np.cos(theta),0,np.sin(theta)],[0,1,0],[-np.sin(theta),0,np.cos(theta)]])
+
+    
+    else:
+        rotate = np.array([[np.cos(theta),-np.sin(theta),0],[np.sin(theta),np.cos(theta),0],[0,0,1]])
+
+    
+    rotate = np.round_(rotate,decimals=5)
+    return rotate @ vector3
+    

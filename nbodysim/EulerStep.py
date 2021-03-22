@@ -132,6 +132,8 @@ def checkCollision(m1,m2):
             dom = m2
             sub = m1
         
+        #print("Dom: ", dom.mass)
+        #print("Sub: ", sub.mass)
         #Inelastic collision properties (Conserve linear momentum)
         dom.velocity = (dom.mass*dom.velocity + sub.mass*sub.velocity)/(dom.mass+sub.mass)
         
@@ -143,6 +145,9 @@ def checkCollision(m1,m2):
         
         #Remove sub
         sub.mass = 0
+        
+        #print("Dom: ", m1.mass)
+        #print("Sub: ", m2.mass)
         
     #return so the sim knows to delete masses, if needed (0 is no delete, 1 is m1, 2 is m2)
     return retVal
