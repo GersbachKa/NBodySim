@@ -279,6 +279,41 @@ class Simulator:
         
         else:
             raise ValueError("{} is not an integer or string".format(nameOrIndex))
+            
+       
+    def getTotalEnergy(self,nameOrIndex):
+        """
+        Gets total energy of one object in our system.
+        
+        This will find the kinetic energy given by the velocity and the potential energy
+        between all objects given by the position and mass. This will give to scalar values
+        which the functions adds to give the total energy. The nameOrIndex variable allows
+        the user to input either the name or index of a specific object.
+        
+         Parameters:
+            nameOrIndex (str / int): The index or name of a mass you want.
+            
+         Returns: 
+             Total energy of one particular object in Joules.
+        
+        
+        """
+        z = self.getObject(nameOrIndex)
+        kineticEnergy = (1/2)*(z.mass)*(z.velocity.dot(z.velocity))
+        
+        potentialEnergy = 0
+        
+        for i in range(self.objectCount):
+            
+            y = self.allObjects[i]
+            
+            if y != z:
+                dif = ((z.position[0]-y.position[0]))
+                pE = (-self.G*z.mass*y.mass)/np.sqrt(dif.dot(dif))
+                potentialEnergy += pE 
+                
+        return(kineticEnergy + potentialEnergy)
+            
     
     
     def setStepFunction(self,stepType="Euler"):
