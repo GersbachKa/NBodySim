@@ -46,10 +46,12 @@ def eulerStepFunction(simulator, dt, collisions=True):
             m1 = simulator.getObject(n1)
             m2 = simulator.getObject(n2)
             
+            #Ensure they aren't the same object
             if m1!=m2:
             
                 dom, sub = None, None
             
+                #Assign dominance
                 if m1.mass>m2.mass:
                     dom = m1
                     sub = m2
@@ -57,6 +59,7 @@ def eulerStepFunction(simulator, dt, collisions=True):
                     dom = m2
                     sub = m1
         
+                #Conservation of linear momentum
                 dom.velocity = (dom.mass*dom.velocity + sub.mass*sub.velocity)/(dom.mass+sub.mass)
         
                 #Have dom get proportionally bigger (same density as before)
@@ -65,8 +68,10 @@ def eulerStepFunction(simulator, dt, collisions=True):
                 #Add mass
                 dom.mass += sub.mass
         
-                #Remove sub
+                #Replace all instances of sub name with the dom name in subsiquent collisions
                 toCombine[toCombine==sub.name] = dom.name
+        
+                #Remove sub
                 simulator.removeObject(sub.name)
             
             
