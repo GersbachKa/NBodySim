@@ -288,7 +288,8 @@ class Simulator:
         This will find the kinetic energy given by the velocity and the potential energy
         between all objects given by the position and mass. This will give to scalar values
         which the functions adds to give the total energy. The nameOrIndex variable allows
-        the user to input either the name or index of a specific object.
+        the user to input either the name or index of a specific object. Returns None if the
+        object does not exist.
         
          Parameters:
             nameOrIndex (str / int): The index or name of a mass you want.
@@ -299,6 +300,9 @@ class Simulator:
         
         """
         z = self.getObject(nameOrIndex)
+        if z == None:
+            return None
+        
         kineticEnergy = (1/2)*(z.mass)*(z.velocity.dot(z.velocity))
         
         potentialEnergy = 0
