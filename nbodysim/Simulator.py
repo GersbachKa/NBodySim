@@ -332,7 +332,7 @@ class Simulator:
             self.stepFunction = eulerStepFunction
             
     
-    def step(self,dt=1,numberOfSteps=60,save=False):
+    def step(self,dt=1,numberOfSteps=60,save=False,collisions=True):
         """
         A method to step the simulation forward in time.
         
@@ -348,6 +348,7 @@ class Simulator:
             dt (double): The distance forward in time for each step
             numSteps (int): The number of times to step forward by dt
             save (bool): Whether to save to a file after completing the the full step
+            collisions (bool): Whether to allow collisions or skip them
         
         """
         if self.stepFunction == None:
@@ -358,7 +359,7 @@ class Simulator:
             self._saveState()
         
         for i in range(numberOfSteps):
-            self.stepFunction(self,dt)
+            self.stepFunction(self,dt,collisions)
             self.time+=dt
         
         
@@ -440,7 +441,7 @@ class Simulator:
     
     
     def play(self,dt=1,numberOfSteps=100,save=False,pause=0,plotFirst=True,axes=('x','y'),
-             plotRange=None,plotSize=(400,400),trails=True):
+             plotRange=None,plotSize=(400,400),trails=True,collisions=True):
         """
         A method to show the simulation evolve over time.
         
@@ -468,6 +469,7 @@ class Simulator:
             plotSize (2 tuple): A pair of integers that represents the size in pixels
                                 of the created plot.
             trails (boolean): Whether to show object trails
+            collisions (boolean): Whether to allow collisions or skip them
         """
         
         if plotFirst:
@@ -476,7 +478,7 @@ class Simulator:
         keepPlay=True
         try:
             while keepPlay:
-                self.step(dt,numberOfSteps,save)
+                self.step(dt,numberOfSteps,save,collisions)
                 self.updatePlot()
                 time.sleep(pause)
         except KeyboardInterrupt:
